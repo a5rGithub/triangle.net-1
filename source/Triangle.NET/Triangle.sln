@@ -8,21 +8,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Triangle.Rendering", "Triangle.Rendering\Triangle.Rendering.csproj", "{41022E0E-BD0F-439E-BC3A-AABB1B43471B}"
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 4
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs06
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Triangle\\Triangle.csproj
-		SccProjectName1 = Triangle
-		SccLocalPath1 = Triangle
-		SccProjectUniqueName2 = TestApp\\Mesh\u0020Explorer.csproj
-		SccProjectName2 = TestApp
-		SccLocalPath2 = TestApp
-		SccProjectUniqueName3 = Triangle.Rendering\\Triangle.Rendering.csproj
-		SccProjectName3 = Triangle.Rendering
-		SccLocalPath3 = Triangle.Rendering
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms

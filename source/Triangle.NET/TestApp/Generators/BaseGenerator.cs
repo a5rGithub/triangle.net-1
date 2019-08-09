@@ -55,22 +55,29 @@ namespace MeshExplorer.Generators
 
         #region Contour helpers
 
-        protected List<Vertex> CreateCircle(double r, int n, int boundary = 0)
+        protected Contour CreateCircleContour(double r, int n, int contourmarker)
         {
-            return CreateCircle(0.0, 0.0, r, n, boundary);
+            var circleVertices = CreateCircleVertices(r, n, boundarymarker: contourmarker);
+            var circleContour = new Contour(circleVertices, contourmarker);
+            return circleContour;
         }
 
-        protected List<Vertex> CreateCircle(double x, double y, double r, int n, int boundary = 0)
+        protected List<Vertex> CreateCircleVertices(double r, int n, int boundarymarker = 0)
         {
-            return CreateEllipse(0.0, 0.0, r, 1.0, 1.0, n, boundary);
+            return CreateCircleVertices(0.0, 0.0, r, n, boundarymarker);
         }
 
-        protected List<Vertex> CreateEllipse(double r, double a, double b, int n, int boundary = 0)
+        protected List<Vertex> CreateCircleVertices(double x, double y, double r, int n, int boundarymarker = 0)
         {
-            return CreateEllipse(0.0, 0.0, r, a, b, n, boundary);
+            return CreateEllipseVertices(0.0, 0.0, r, 1.0, 1.0, n, boundarymarker);
         }
 
-        protected List<Vertex> CreateEllipse(double x, double y, double r, double a, double b, int n, int boundary = 0)
+        protected List<Vertex> CreateEllipseVertices(double r, double a, double b, int n, int boundarymarker = 0)
+        {
+            return CreateEllipseVertices(0.0, 0.0, r, a, b, n, boundarymarker);
+        }
+
+        protected List<Vertex> CreateEllipseVertices(double x, double y, double r, double a, double b, int n, int boundarymarker = 0)
         {
             var contour = new List<Vertex>(n);
 
@@ -78,18 +85,18 @@ namespace MeshExplorer.Generators
 
             for (int i = 0; i < n; i++)
             {
-                contour.Add(new Vertex(x + a * r * Math.Cos(i * dphi), y + b * r * Math.Sin(i * dphi), boundary));
+                contour.Add(new Vertex(x + a * r * Math.Cos(i * dphi), y + b * r * Math.Sin(i * dphi), boundarymarker));
             }
 
             return contour;
         }
 
-        protected List<Vertex> CreateRectangle(Rectangle rect, int n, int boundary = 0)
+        protected List<Vertex> CreateRectangleVertices(Rectangle rect, int n, int boundarymarker = 0)
         {
-            return CreateRectangle(rect, n, n, boundary);
+            return CreateRectangleVertices(rect, n, n, boundarymarker);
         }
 
-        protected List<Vertex> CreateRectangle(Rectangle rect, int nH, int nV, int boundary = 0)
+        protected List<Vertex> CreateRectangleVertices(Rectangle rect, int nH, int nV, int boundarymarker = 0)
         {
             var contour = new List<Vertex>(2 * nH + 2 * nV);
 

@@ -36,29 +36,32 @@ namespace MeshExplorer.Generators
             // Current radius and step size
             double r, h = radius / n;
 
-            var input = new Polygon(n + 1);
+            var polygon = new Polygon(n + 1);
 
             // Inner cirlce (radius = 1) (hole)
             r = 1;
-            input.AddContour(CreateCircle(r, (int)(r / h), 1), 1, new Point(0, 0));
+            var innerCircleMarker = 1;
+            polygon.Add(CreateCircleContour(r, (int)(r / h), innerCircleMarker), new Point(0, 0));
 
             // Center cirlce
             r = (radius + 1.0) / 2.0;
-            input.AddContour(CreateCircle(r, (int)(r / h), 2), 2);
+            var centerCircleMarker = 2;
+            polygon.Add(CreateCircleContour(r, (int)(r / h), centerCircleMarker));
 
             //count = input.Count;
 
             // Outer cirlce
             r = radius;
-            input.AddContour(CreateCircle(r, (int)(r / h), 3), 3);
+            var outerCircleMarker = 3;
+            polygon.Add(CreateCircleContour(r, (int)(r / h), outerCircleMarker));
 
             // Regions: |++++++|++++++|---|
             //          r             1   0
 
-            input.Regions.Add(new RegionPointer((r + 3.0) / 4.0, 0, 1));
-            input.Regions.Add(new RegionPointer((3 * r + 1.0) / 4.0, 0, 2));
+            polygon.Regions.Add(new RegionPointer((r + 3.0) / 4.0, 0, 1));
+            polygon.Regions.Add(new RegionPointer((3 * r + 1.0) / 4.0, 0, 2));
 
-            return input;
+            return polygon;
         }
     }
 }

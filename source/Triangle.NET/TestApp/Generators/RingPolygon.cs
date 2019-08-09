@@ -50,24 +50,25 @@ namespace MeshExplorer.Generators
             int n = GetParamValueInt(0, param0);
             int m = n / 2;
 
-            var input = new Polygon(n + 1);
+            var polygon = new Polygon(n + 1);
 
             double ro, r = 10;
             double step = 2 * Math.PI / m;
 
-            var inner = new List<Vertex>(m);
+            var innerRingContourVertices = new List<Vertex>(m);
 
             // Inner ring
             for (int i = 0; i < m; i++)
             {
-                inner.Add(new Vertex(r * Math.Cos(i * step), r * Math.Sin(i * step)));
+                innerRingContourVertices.Add(new Vertex(r * Math.Cos(i * step), r * Math.Sin(i * step)));
             }
+            var innerRingContour = new Contour(innerRingContourVertices, 1);
 
-            input.AddContour(inner, 1);
+            polygon.Add(innerRingContour);
 
             r = 1.5 * r;
 
-            var outer = new List<Vertex>(n);
+            var outerRingVertices = new List<Vertex>(n);
 
             step = 2 * Math.PI / n;
             double offset = step / 2;
@@ -82,14 +83,14 @@ namespace MeshExplorer.Generators
                     ro = r + r * Util.Random.NextDouble() * (param1 / 100);
                 }
 
-                outer.Add(new Vertex(ro * Math.Cos(i * step + offset), ro * Math.Sin(i * step + offset)));
+                outerRingVertices.Add(new Vertex(ro * Math.Cos(i * step + offset), ro * Math.Sin(i * step + offset)));
             }
+            var outerRingContour = new Contour(outerRingVertices, 2);
+            polygon.Add(outerRingContour);
 
-            input.AddContour(outer, 2);
+            polygon.Holes.Add(new Point(0, 0));
 
-            input.Holes.Add(new Point(0, 0));
-
-            return input;
+            return polygon;
         }
 
         public override string ToString()

@@ -33,19 +33,23 @@ namespace MeshExplorer.Generators
         {
             int n = GetParamValueInt(1, param1);
 
-            var input = new Polygon(n + 4);
+            var polygon = new Polygon(n + 4);
 
-            double r = GetParamValueInt(2, param2);
+            double radius = GetParamValueInt(2, param2);
 
             // Generate circle (hole)
-            input.AddContour(CreateCircle(r, n, 1), 1, new Point(0, 0));
+            var circleContour = new Contour(CreateCircleVertices(radius, n, 1), 1);
+            var contour = new Contour(CreateCircleVertices(radius, n, 1));
+
+            polygon.Add(circleContour, new Point(0, 0));
 
             n = GetParamValueInt(0, param0);
 
             // Generate box
-            input.AddContour(CreateRectangle(new Rectangle(-50, -50, 100, 100), n, 2), 2);
+            var rectangularContour = new Contour(CreateRectangleVertices(new Rectangle(-50, -50, 100, 100), n, 2), 2);
+            polygon.Add(rectangularContour);
 
-            return input;
+            return polygon;
         }
     }
 }

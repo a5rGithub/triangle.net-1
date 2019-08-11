@@ -167,7 +167,8 @@ namespace TriangleNet.Rendering
 
         // Change or add as many colors as you like...
         private static Color[] regionColors = {
-            Color.Transparent,
+            //Color.Transparent,
+            Color.FromArgb(200, 255, 255, 255),
             Color.FromArgb(200,   0, 255,   0),
             Color.FromArgb(200, 255,   0,   0),
             Color.FromArgb(200,   0,   0, 255),

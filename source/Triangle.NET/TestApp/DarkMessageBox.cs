@@ -42,7 +42,7 @@ namespace MeshExplorer
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(336, 87);
+            this.btnCancel.Location = new System.Drawing.Point(336, 118);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(92, 23);
             this.btnCancel.TabIndex = 0;
@@ -52,7 +52,7 @@ namespace MeshExplorer
             // btnOk
             // 
             this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Location = new System.Drawing.Point(234, 87);
+            this.btnOk.Location = new System.Drawing.Point(234, 118);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(92, 23);
             this.btnOk.TabIndex = 1;
@@ -65,7 +65,7 @@ namespace MeshExplorer
             this.lbMessage.ForeColor = System.Drawing.Color.White;
             this.lbMessage.Location = new System.Drawing.Point(12, 9);
             this.lbMessage.Name = "lbMessage";
-            this.lbMessage.Size = new System.Drawing.Size(412, 30);
+            this.lbMessage.Size = new System.Drawing.Size(412, 78);
             this.lbMessage.TabIndex = 2;
             this.lbMessage.Text = "Message";
             // 
@@ -74,7 +74,7 @@ namespace MeshExplorer
             this.lbInfo.AutoSize = true;
             this.lbInfo.BackColor = System.Drawing.Color.Transparent;
             this.lbInfo.ForeColor = System.Drawing.Color.White;
-            this.lbInfo.Location = new System.Drawing.Point(12, 47);
+            this.lbInfo.Location = new System.Drawing.Point(12, 87);
             this.lbInfo.Name = "lbInfo";
             this.lbInfo.Size = new System.Drawing.Size(28, 13);
             this.lbInfo.TabIndex = 3;
@@ -85,7 +85,7 @@ namespace MeshExplorer
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(76)))), ((int)(((byte)(76)))), ((int)(((byte)(76)))));
-            this.ClientSize = new System.Drawing.Size(436, 118);
+            this.ClientSize = new System.Drawing.Size(436, 149);
             this.Controls.Add(this.lbInfo);
             this.Controls.Add(this.lbMessage);
             this.Controls.Add(this.btnOk);

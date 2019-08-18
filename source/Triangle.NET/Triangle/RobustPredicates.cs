@@ -450,6 +450,15 @@ namespace TriangleNet
 
         #region Exact arithmetics
 
+        private static void FastExpansionSumZeroElimExtracted(double Q, out double Qnew, out double hh, out double bvirt, out double avirt, out double bround, out double around, double now)
+        {
+            Qnew = Q + now;
+            bvirt = Qnew - Q;
+            avirt = Qnew - bvirt;
+            bround = now - bvirt;
+            around = Q - avirt;
+            hh = around + bround;
+        }
         /// <summary>
         /// Sum two expansions, eliminating zero components from the output expansion.  
         /// </summary>
@@ -494,12 +503,12 @@ namespace TriangleNet
             {
                 if ((fnow > enow) == (fnow > -enow))
                 {
-                    Qnew = (double)(enow + Q); bvirt = Qnew - enow; hh = Q - bvirt;
+                    Qnew = enow + Q; bvirt = Qnew - enow; hh = Q - bvirt;
                     enow = e[++eindex];
                 }
                 else
                 {
-                    Qnew = (double)(fnow + Q); bvirt = Qnew - fnow; hh = Q - bvirt;
+                    Qnew = fnow + Q; bvirt = Qnew - fnow; hh = Q - bvirt;
                     fnow = f[++findex];
                 }
                 Q = Qnew;
@@ -511,24 +520,12 @@ namespace TriangleNet
                 {
                     if ((fnow > enow) == (fnow > -enow))
                     {
-                        Qnew = (double)(Q + enow);
-                        bvirt = (double)(Qnew - Q);
-                        avirt = Qnew - bvirt;
-                        bround = enow - bvirt;
-                        around = Q - avirt;
-                        hh = around + bround;
-
+                        FastExpansionSumZeroElimExtracted(Q, out Qnew, out hh, out bvirt, out avirt, out bround, out around, enow);
                         enow = e[++eindex];
                     }
                     else
                     {
-                        Qnew = (double)(Q + fnow);
-                        bvirt = (double)(Qnew - Q);
-                        avirt = Qnew - bvirt;
-                        bround = fnow - bvirt;
-                        around = Q - avirt;
-                        hh = around + bround;
-
+                        FastExpansionSumZeroElimExtracted(Q, out Qnew, out hh, out bvirt, out avirt, out bround, out around, fnow);
                         fnow = f[++findex];
                     }
                     Q = Qnew;
@@ -540,13 +537,7 @@ namespace TriangleNet
             }
             while (eindex < elen)
             {
-                Qnew = (double)(Q + enow);
-                bvirt = (double)(Qnew - Q);
-                avirt = Qnew - bvirt;
-                bround = enow - bvirt;
-                around = Q - avirt;
-                hh = around + bround;
-
+                FastExpansionSumZeroElimExtracted(Q, out Qnew, out hh, out bvirt, out avirt, out bround, out around, enow);
                 enow = e[++eindex];
                 Q = Qnew;
                 if (hh != 0.0)
@@ -556,13 +547,7 @@ namespace TriangleNet
             }
             while (findex < flen)
             {
-                Qnew = (double)(Q + fnow);
-                bvirt = (double)(Qnew - Q);
-                avirt = Qnew - bvirt;
-                bround = fnow - bvirt;
-                around = Q - avirt;
-                hh = around + bround;
-
+                FastExpansionSumZeroElimExtracted(Q, out Qnew, out hh, out bvirt, out avirt, out bround, out around, fnow);
                 fnow = f[++findex];
                 Q = Qnew;
                 if (hh != 0.0)
@@ -607,8 +592,8 @@ namespace TriangleNet
             double ahi, alo, bhi, blo;
             double err1, err2, err3;
 
-            c = (double)(splitter * b); abig = (double)(c - b); bhi = c - abig; blo = b - bhi;
-            Q = (double)(e[0] * b); c = (double)(splitter * e[0]); abig = (double)(c - e[0]); ahi = c - abig; alo = e[0] - ahi; err1 = Q - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); hh = (alo * blo) - err3;
+            c = splitter * b; abig = c - b; bhi = c - abig; blo = b - bhi;
+            Q = e[0] * b; c = splitter * e[0]; abig = c - e[0]; ahi = c - abig; alo = e[0] - ahi; err1 = Q - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); hh = (alo * blo) - err3;
             hindex = 0;
             if (hh != 0)
             {
@@ -617,13 +602,13 @@ namespace TriangleNet
             for (eindex = 1; eindex < elen; eindex++)
             {
                 enow = e[eindex];
-                product1 = (double)(enow * b); c = (double)(splitter * enow); abig = (double)(c - enow); ahi = c - abig; alo = enow - ahi; err1 = product1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); product0 = (alo * blo) - err3;
-                sum = (double)(Q + product0); bvirt = (double)(sum - Q); avirt = sum - bvirt; bround = product0 - bvirt; around = Q - avirt; hh = around + bround;
+                product1 = enow * b; c = splitter * enow; abig = c - enow; ahi = c - abig; alo = enow - ahi; err1 = product1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); product0 = (alo * blo) - err3;
+                sum = Q + product0; bvirt = sum - Q; avirt = sum - bvirt; bround = product0 - bvirt; around = Q - avirt; hh = around + bround;
                 if (hh != 0)
                 {
                     h[hindex++] = hh;
                 }
-                Q = (double)(product1 + sum); bvirt = Q - product1; hh = sum - bvirt;
+                Q = product1 + sum; bvirt = Q - product1; hh = sum - bvirt;
                 if (hh != 0)
                 {
                     h[hindex++] = hh;
@@ -682,8 +667,6 @@ namespace TriangleNet
             double det, errbound;
             // Edited to work around index out of range exceptions (changed array length from 4 to 5).
             // See unsafe indexing in FastExpansionSumZeroElim.
-            double[] B = new double[5], u = new double[5];
-            double[] C1 = new double[8], C2 = new double[12], D = new double[16];
             double B3;
             int C1length, C2length, Dlength;
 
@@ -700,15 +683,15 @@ namespace TriangleNet
             double _i, _j;
             double _0;
 
-            acx = (double)(pa.x - pc.x);
-            bcx = (double)(pb.x - pc.x);
-            acy = (double)(pa.y - pc.y);
-            bcy = (double)(pb.y - pc.y);
+            acx = pa.x - pc.x;
+            bcx = pb.x - pc.x;
+            acy = pa.y - pc.y;
+            bcy = pb.y - pc.y;
 
-            detleft = (double)(acx * bcy); c = (double)(splitter * acx); abig = (double)(c - acx); ahi = c - abig; alo = acx - ahi; c = (double)(splitter * bcy); abig = (double)(c - bcy); bhi = c - abig; blo = bcy - bhi; err1 = detleft - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); detlefttail = (alo * blo) - err3;
-            detright = (double)(acy * bcx); c = (double)(splitter * acy); abig = (double)(c - acy); ahi = c - abig; alo = acy - ahi; c = (double)(splitter * bcx); abig = (double)(c - bcx); bhi = c - abig; blo = bcx - bhi; err1 = detright - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); detrighttail = (alo * blo) - err3;
+            detleft = acx * bcy; c = splitter * acx; abig = c - acx; ahi = c - abig; alo = acx - ahi; c = splitter * bcy; abig = c - bcy; bhi = c - abig; blo = bcy - bhi; err1 = detleft - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); detlefttail = (alo * blo) - err3;
+            detright = acy * bcx; c = splitter * acy; abig = c - acy; ahi = c - abig; alo = acy - ahi; c = splitter * bcx; abig = c - bcx; bhi = c - abig; blo = bcx - bhi; err1 = detright - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); detrighttail = (alo * blo) - err3;
 
-            _i = (double)(detlefttail - detrighttail); bvirt = (double)(detlefttail - _i); avirt = _i + bvirt; bround = bvirt - detrighttail; around = detlefttail - avirt; B[0] = around + bround; _j = (double)(detleft + _i); bvirt = (double)(_j - detleft); avirt = _j - bvirt; bround = _i - bvirt; around = detleft - avirt; _0 = around + bround; _i = (double)(_0 - detright); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - detright; around = _0 - avirt; B[1] = around + bround; B3 = (double)(_j + _i); bvirt = (double)(B3 - _j); avirt = B3 - bvirt; bround = _i - bvirt; around = _j - avirt; B[2] = around + bround;
+            _i = detlefttail - detrighttail; bvirt = detlefttail - _i; avirt = _i + bvirt; bround = bvirt - detrighttail; around = detlefttail - avirt; B[0] = around + bround; _j = detleft + _i; bvirt = _j - detleft; avirt = _j - bvirt; bround = _i - bvirt; around = detleft - avirt; _0 = around + bround; _i = _0 - detright; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - detright; around = _0 - avirt; B[1] = around + bround; B3 = _j + _i; bvirt = B3 - _j; avirt = B3 - bvirt; bround = _i - bvirt; around = _j - avirt; B[2] = around + bround;
 
             B[3] = B3;
 
@@ -719,10 +702,10 @@ namespace TriangleNet
                 return det;
             }
 
-            bvirt = (double)(pa.x - acx); avirt = acx + bvirt; bround = bvirt - pc.x; around = pa.x - avirt; acxtail = around + bround;
-            bvirt = (double)(pb.x - bcx); avirt = bcx + bvirt; bround = bvirt - pc.x; around = pb.x - avirt; bcxtail = around + bround;
-            bvirt = (double)(pa.y - acy); avirt = acy + bvirt; bround = bvirt - pc.y; around = pa.y - avirt; acytail = around + bround;
-            bvirt = (double)(pb.y - bcy); avirt = bcy + bvirt; bround = bvirt - pc.y; around = pb.y - avirt; bcytail = around + bround;
+            bvirt = pa.x - acx; avirt = acx + bvirt; bround = bvirt - pc.x; around = pa.x - avirt; acxtail = around + bround;
+            bvirt = pb.x - bcx; avirt = bcx + bvirt; bround = bvirt - pc.x; around = pb.x - avirt; bcxtail = around + bround;
+            bvirt = pa.y - acy; avirt = acy + bvirt; bround = bvirt - pc.y; around = pa.y - avirt; acytail = around + bround;
+            bvirt = pb.y - bcy; avirt = bcy + bvirt; bround = bvirt - pc.y; around = pb.y - avirt; bcytail = around + bround;
 
             if ((acxtail == 0.0) && (acytail == 0.0)
                 && (bcxtail == 0.0) && (bcytail == 0.0))
@@ -738,26 +721,28 @@ namespace TriangleNet
                 return det;
             }
 
-            s1 = (double)(acxtail * bcy); c = (double)(splitter * acxtail); abig = (double)(c - acxtail); ahi = c - abig; alo = acxtail - ahi; c = (double)(splitter * bcy); abig = (double)(c - bcy); bhi = c - abig; blo = bcy - bhi; err1 = s1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); s0 = (alo * blo) - err3;
-            t1 = (double)(acytail * bcx); c = (double)(splitter * acytail); abig = (double)(c - acytail); ahi = c - abig; alo = acytail - ahi; c = (double)(splitter * bcx); abig = (double)(c - bcx); bhi = c - abig; blo = bcx - bhi; err1 = t1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); t0 = (alo * blo) - err3;
-            _i = (double)(s0 - t0); bvirt = (double)(s0 - _i); avirt = _i + bvirt; bround = bvirt - t0; around = s0 - avirt; u[0] = around + bround; _j = (double)(s1 + _i); bvirt = (double)(_j - s1); avirt = _j - bvirt; bround = _i - bvirt; around = s1 - avirt; _0 = around + bround; _i = (double)(_0 - t1); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - t1; around = _0 - avirt; u[1] = around + bround; u3 = (double)(_j + _i); bvirt = (double)(u3 - _j); avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
+            s1 = acxtail * bcy; c = splitter * acxtail; abig = c - acxtail; ahi = c - abig; alo = acxtail - ahi; c = splitter * bcy; abig = c - bcy; bhi = c - abig; blo = bcy - bhi; err1 = s1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); s0 = (alo * blo) - err3;
+            t1 = acytail * bcx; c = splitter * acytail; abig = c - acytail; ahi = c - abig; alo = acytail - ahi; c = splitter * bcx; abig = c - bcx; bhi = c - abig; blo = bcx - bhi; err1 = t1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); t0 = (alo * blo) - err3;
+            _i = s0 - t0; bvirt = s0 - _i; avirt = _i + bvirt; bround = bvirt - t0; around = s0 - avirt; u[0] = around + bround; _j = s1 + _i; bvirt = _j - s1; avirt = _j - bvirt; bround = _i - bvirt; around = s1 - avirt; _0 = around + bround; _i = _0 - t1; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - t1; around = _0 - avirt; u[1] = around + bround; u3 = _j + _i; bvirt = u3 - _j; avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
             u[3] = u3;
             C1length = FastExpansionSumZeroElim(4, B, 4, u, C1);
 
-            s1 = (double)(acx * bcytail); c = (double)(splitter * acx); abig = (double)(c - acx); ahi = c - abig; alo = acx - ahi; c = (double)(splitter * bcytail); abig = (double)(c - bcytail); bhi = c - abig; blo = bcytail - bhi; err1 = s1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); s0 = (alo * blo) - err3;
-            t1 = (double)(acy * bcxtail); c = (double)(splitter * acy); abig = (double)(c - acy); ahi = c - abig; alo = acy - ahi; c = (double)(splitter * bcxtail); abig = (double)(c - bcxtail); bhi = c - abig; blo = bcxtail - bhi; err1 = t1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); t0 = (alo * blo) - err3;
-            _i = (double)(s0 - t0); bvirt = (double)(s0 - _i); avirt = _i + bvirt; bround = bvirt - t0; around = s0 - avirt; u[0] = around + bround; _j = (double)(s1 + _i); bvirt = (double)(_j - s1); avirt = _j - bvirt; bround = _i - bvirt; around = s1 - avirt; _0 = around + bround; _i = (double)(_0 - t1); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - t1; around = _0 - avirt; u[1] = around + bround; u3 = (double)(_j + _i); bvirt = (double)(u3 - _j); avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
+            s1 = acx * bcytail; c = splitter * acx; abig = c - acx; ahi = c - abig; alo = acx - ahi; c = splitter * bcytail; abig = c - bcytail; bhi = c - abig; blo = bcytail - bhi; err1 = s1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); s0 = (alo * blo) - err3;
+            t1 = acy * bcxtail; c = splitter * acy; abig = c - acy; ahi = c - abig; alo = acy - ahi; c = splitter * bcxtail; abig = c - bcxtail; bhi = c - abig; blo = bcxtail - bhi; err1 = t1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); t0 = (alo * blo) - err3;
+            _i = s0 - t0; bvirt = s0 - _i; avirt = _i + bvirt; bround = bvirt - t0; around = s0 - avirt; u[0] = around + bround; _j = s1 + _i; bvirt = _j - s1; avirt = _j - bvirt; bround = _i - bvirt; around = s1 - avirt; _0 = around + bround; _i = _0 - t1; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - t1; around = _0 - avirt; u[1] = around + bround; u3 = _j + _i; bvirt = u3 - _j; avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
             u[3] = u3;
             C2length = FastExpansionSumZeroElim(C1length, C1, 4, u, C2);
 
-            s1 = (double)(acxtail * bcytail); c = (double)(splitter * acxtail); abig = (double)(c - acxtail); ahi = c - abig; alo = acxtail - ahi; c = (double)(splitter * bcytail); abig = (double)(c - bcytail); bhi = c - abig; blo = bcytail - bhi; err1 = s1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); s0 = (alo * blo) - err3;
-            t1 = (double)(acytail * bcxtail); c = (double)(splitter * acytail); abig = (double)(c - acytail); ahi = c - abig; alo = acytail - ahi; c = (double)(splitter * bcxtail); abig = (double)(c - bcxtail); bhi = c - abig; blo = bcxtail - bhi; err1 = t1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); t0 = (alo * blo) - err3;
-            _i = (double)(s0 - t0); bvirt = (double)(s0 - _i); avirt = _i + bvirt; bround = bvirt - t0; around = s0 - avirt; u[0] = around + bround; _j = (double)(s1 + _i); bvirt = (double)(_j - s1); avirt = _j - bvirt; bround = _i - bvirt; around = s1 - avirt; _0 = around + bround; _i = (double)(_0 - t1); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - t1; around = _0 - avirt; u[1] = around + bround; u3 = (double)(_j + _i); bvirt = (double)(u3 - _j); avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
+            s1 = acxtail * bcytail; c = splitter * acxtail; abig = c - acxtail; ahi = c - abig; alo = acxtail - ahi; c = splitter * bcytail; abig = c - bcytail; bhi = c - abig; blo = bcytail - bhi; err1 = s1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); s0 = (alo * blo) - err3;
+            t1 = acytail * bcxtail; c = splitter * acytail; abig = c - acytail; ahi = c - abig; alo = acytail - ahi; c = splitter * bcxtail; abig = c - bcxtail; bhi = c - abig; blo = bcxtail - bhi; err1 = t1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); t0 = (alo * blo) - err3;
+            _i = s0 - t0; bvirt = s0 - _i; avirt = _i + bvirt; bround = bvirt - t0; around = s0 - avirt; u[0] = around + bround; _j = s1 + _i; bvirt = _j - s1; avirt = _j - bvirt; bround = _i - bvirt; around = s1 - avirt; _0 = around + bround; _i = _0 - t1; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - t1; around = _0 - avirt; u[1] = around + bround; u3 = _j + _i; bvirt = u3 - _j; avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
             u[3] = u3;
             Dlength = FastExpansionSumZeroElim(C2length, C2, 4, u, D);
 
             return (D[Dlength - 1]);
         }
+
+
 
         /// <summary>
         /// Return a positive value if the point pd lies inside the circle passing through
@@ -785,7 +770,6 @@ namespace TriangleNet
 
             double bdxcdy1, cdxbdy1, cdxady1, adxcdy1, adxbdy1, bdxady1;
             double bdxcdy0, cdxbdy0, cdxady0, adxcdy0, adxbdy0, bdxady0;
-            double[] bc = new double[4], ca = new double[4], ab = new double[4];
             double bc3, ca3, ab3;
             int axbclen, axxbclen, aybclen, ayybclen, alen;
             int bxcalen, bxxcalen, bycalen, byycalen, blen;
@@ -797,32 +781,21 @@ namespace TriangleNet
             double adxtail, bdxtail, cdxtail, adytail, bdytail, cdytail;
             double adxadx1, adyady1, bdxbdx1, bdybdy1, cdxcdx1, cdycdy1;
             double adxadx0, adyady0, bdxbdx0, bdybdy0, cdxcdx0, cdycdy0;
-            double[] aa = new double[4], bb = new double[4], cc = new double[4];
             double aa3, bb3, cc3;
             double ti1, tj1;
             double ti0, tj0;
             // Edited to work around index out of range exceptions (changed array length from 4 to 5).
             // See unsafe indexing in FastExpansionSumZeroElim.
-            double[] u = new double[5], v = new double[5];
             double u3, v3;
             int temp8len, temp16alen, temp16blen, temp16clen;
             int temp32alen, temp32blen, temp48len, temp64len;
-            double[] axtbb = new double[8], axtcc = new double[8], aytbb = new double[8], aytcc = new double[8];
             int axtbblen, axtcclen, aytbblen, aytcclen;
-            double[] bxtaa = new double[8], bxtcc = new double[8], bytaa = new double[8], bytcc = new double[8];
             int bxtaalen, bxtcclen, bytaalen, bytcclen;
-            double[] cxtaa = new double[8], cxtbb = new double[8], cytaa = new double[8], cytbb = new double[8];
             int cxtaalen, cxtbblen, cytaalen, cytbblen;
-            double[] axtbc = new double[8], aytbc = new double[8], bxtca = new double[8], bytca = new double[8], cxtab = new double[8], cytab = new double[8];
             int axtbclen = 0, aytbclen = 0, bxtcalen = 0, bytcalen = 0, cxtablen = 0, cytablen = 0;
-            double[] axtbct = new double[16], aytbct = new double[16], bxtcat = new double[16], bytcat = new double[16], cxtabt = new double[16], cytabt = new double[16];
             int axtbctlen, aytbctlen, bxtcatlen, bytcatlen, cxtabtlen, cytabtlen;
-            double[] axtbctt = new double[8], aytbctt = new double[8], bxtcatt = new double[8];
-            double[] bytcatt = new double[8], cxtabtt = new double[8], cytabtt = new double[8];
             int axtbcttlen, aytbcttlen, bxtcattlen, bytcattlen, cxtabttlen, cytabttlen;
-            double[] abt = new double[8], bct = new double[8], cat = new double[8];
             int abtlen, bctlen, catlen;
-            double[] abtt = new double[4], bctt = new double[4], catt = new double[4];
             int abttlen, bcttlen, cattlen;
             double abtt3, bctt3, catt3;
             double negate;
@@ -836,23 +809,23 @@ namespace TriangleNet
             double _i, _j;
             double _0;
 
-            adx = (double)(pa.x - pd.x);
-            bdx = (double)(pb.x - pd.x);
-            cdx = (double)(pc.x - pd.x);
-            ady = (double)(pa.y - pd.y);
-            bdy = (double)(pb.y - pd.y);
-            cdy = (double)(pc.y - pd.y);
+            adx = pa.x - pd.x;
+            bdx = pb.x - pd.x;
+            cdx = pc.x - pd.x;
+            ady = pa.y - pd.y;
+            bdy = pb.y - pd.y;
+            cdy = pc.y - pd.y;
 
-            adx = (double)(pa.x - pd.x);
-            bdx = (double)(pb.x - pd.x);
-            cdx = (double)(pc.x - pd.x);
-            ady = (double)(pa.y - pd.y);
-            bdy = (double)(pb.y - pd.y);
-            cdy = (double)(pc.y - pd.y);
+            adx = pa.x - pd.x;
+            bdx = pb.x - pd.x;
+            cdx = pc.x - pd.x;
+            ady = pa.y - pd.y;
+            bdy = pb.y - pd.y;
+            cdy = pc.y - pd.y;
 
-            bdxcdy1 = (double)(bdx * cdy); c = (double)(splitter * bdx); abig = (double)(c - bdx); ahi = c - abig; alo = bdx - ahi; c = (double)(splitter * cdy); abig = (double)(c - cdy); bhi = c - abig; blo = cdy - bhi; err1 = bdxcdy1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); bdxcdy0 = (alo * blo) - err3;
-            cdxbdy1 = (double)(cdx * bdy); c = (double)(splitter * cdx); abig = (double)(c - cdx); ahi = c - abig; alo = cdx - ahi; c = (double)(splitter * bdy); abig = (double)(c - bdy); bhi = c - abig; blo = bdy - bhi; err1 = cdxbdy1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); cdxbdy0 = (alo * blo) - err3;
-            _i = (double)(bdxcdy0 - cdxbdy0); bvirt = (double)(bdxcdy0 - _i); avirt = _i + bvirt; bround = bvirt - cdxbdy0; around = bdxcdy0 - avirt; bc[0] = around + bround; _j = (double)(bdxcdy1 + _i); bvirt = (double)(_j - bdxcdy1); avirt = _j - bvirt; bround = _i - bvirt; around = bdxcdy1 - avirt; _0 = around + bround; _i = (double)(_0 - cdxbdy1); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - cdxbdy1; around = _0 - avirt; bc[1] = around + bround; bc3 = (double)(_j + _i); bvirt = (double)(bc3 - _j); avirt = bc3 - bvirt; bround = _i - bvirt; around = _j - avirt; bc[2] = around + bround;
+            bdxcdy1 = bdx * cdy; c = splitter * bdx; abig = c - bdx; ahi = c - abig; alo = bdx - ahi; c = splitter * cdy; abig = c - cdy; bhi = c - abig; blo = cdy - bhi; err1 = bdxcdy1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); bdxcdy0 = (alo * blo) - err3;
+            cdxbdy1 = cdx * bdy; c = splitter * cdx; abig = c - cdx; ahi = c - abig; alo = cdx - ahi; c = splitter * bdy; abig = c - bdy; bhi = c - abig; blo = bdy - bhi; err1 = cdxbdy1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); cdxbdy0 = (alo * blo) - err3;
+            _i = bdxcdy0 - cdxbdy0; bvirt = bdxcdy0 - _i; avirt = _i + bvirt; bround = bvirt - cdxbdy0; around = bdxcdy0 - avirt; bc[0] = around + bround; _j = bdxcdy1 + _i; bvirt = _j - bdxcdy1; avirt = _j - bvirt; bround = _i - bvirt; around = bdxcdy1 - avirt; _0 = around + bround; _i = _0 - cdxbdy1; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - cdxbdy1; around = _0 - avirt; bc[1] = around + bround; bc3 = _j + _i; bvirt = bc3 - _j; avirt = bc3 - bvirt; bround = _i - bvirt; around = _j - avirt; bc[2] = around + bround;
             bc[3] = bc3;
             axbclen = ScaleExpansionZeroElim(4, bc, adx, axbc);
             axxbclen = ScaleExpansionZeroElim(axbclen, axbc, adx, axxbc);
@@ -860,9 +833,9 @@ namespace TriangleNet
             ayybclen = ScaleExpansionZeroElim(aybclen, aybc, ady, ayybc);
             alen = FastExpansionSumZeroElim(axxbclen, axxbc, ayybclen, ayybc, adet);
 
-            cdxady1 = (double)(cdx * ady); c = (double)(splitter * cdx); abig = (double)(c - cdx); ahi = c - abig; alo = cdx - ahi; c = (double)(splitter * ady); abig = (double)(c - ady); bhi = c - abig; blo = ady - bhi; err1 = cdxady1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); cdxady0 = (alo * blo) - err3;
-            adxcdy1 = (double)(adx * cdy); c = (double)(splitter * adx); abig = (double)(c - adx); ahi = c - abig; alo = adx - ahi; c = (double)(splitter * cdy); abig = (double)(c - cdy); bhi = c - abig; blo = cdy - bhi; err1 = adxcdy1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); adxcdy0 = (alo * blo) - err3;
-            _i = (double)(cdxady0 - adxcdy0); bvirt = (double)(cdxady0 - _i); avirt = _i + bvirt; bround = bvirt - adxcdy0; around = cdxady0 - avirt; ca[0] = around + bround; _j = (double)(cdxady1 + _i); bvirt = (double)(_j - cdxady1); avirt = _j - bvirt; bround = _i - bvirt; around = cdxady1 - avirt; _0 = around + bround; _i = (double)(_0 - adxcdy1); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - adxcdy1; around = _0 - avirt; ca[1] = around + bround; ca3 = (double)(_j + _i); bvirt = (double)(ca3 - _j); avirt = ca3 - bvirt; bround = _i - bvirt; around = _j - avirt; ca[2] = around + bround;
+            cdxady1 = cdx * ady; c = splitter * cdx; abig = c - cdx; ahi = c - abig; alo = cdx - ahi; c = splitter * ady; abig = c - ady; bhi = c - abig; blo = ady - bhi; err1 = cdxady1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); cdxady0 = (alo * blo) - err3;
+            adxcdy1 = adx * cdy; c = splitter * adx; abig = c - adx; ahi = c - abig; alo = adx - ahi; c = splitter * cdy; abig = c - cdy; bhi = c - abig; blo = cdy - bhi; err1 = adxcdy1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); adxcdy0 = (alo * blo) - err3;
+            _i = cdxady0 - adxcdy0; bvirt = cdxady0 - _i; avirt = _i + bvirt; bround = bvirt - adxcdy0; around = cdxady0 - avirt; ca[0] = around + bround; _j = cdxady1 + _i; bvirt = _j - cdxady1; avirt = _j - bvirt; bround = _i - bvirt; around = cdxady1 - avirt; _0 = around + bround; _i = _0 - adxcdy1; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - adxcdy1; around = _0 - avirt; ca[1] = around + bround; ca3 = _j + _i; bvirt = ca3 - _j; avirt = ca3 - bvirt; bround = _i - bvirt; around = _j - avirt; ca[2] = around + bround;
             ca[3] = ca3;
             bxcalen = ScaleExpansionZeroElim(4, ca, bdx, bxca);
             bxxcalen = ScaleExpansionZeroElim(bxcalen, bxca, bdx, bxxca);
@@ -870,9 +843,9 @@ namespace TriangleNet
             byycalen = ScaleExpansionZeroElim(bycalen, byca, bdy, byyca);
             blen = FastExpansionSumZeroElim(bxxcalen, bxxca, byycalen, byyca, bdet);
 
-            adxbdy1 = (double)(adx * bdy); c = (double)(splitter * adx); abig = (double)(c - adx); ahi = c - abig; alo = adx - ahi; c = (double)(splitter * bdy); abig = (double)(c - bdy); bhi = c - abig; blo = bdy - bhi; err1 = adxbdy1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); adxbdy0 = (alo * blo) - err3;
-            bdxady1 = (double)(bdx * ady); c = (double)(splitter * bdx); abig = (double)(c - bdx); ahi = c - abig; alo = bdx - ahi; c = (double)(splitter * ady); abig = (double)(c - ady); bhi = c - abig; blo = ady - bhi; err1 = bdxady1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); bdxady0 = (alo * blo) - err3;
-            _i = (double)(adxbdy0 - bdxady0); bvirt = (double)(adxbdy0 - _i); avirt = _i + bvirt; bround = bvirt - bdxady0; around = adxbdy0 - avirt; ab[0] = around + bround; _j = (double)(adxbdy1 + _i); bvirt = (double)(_j - adxbdy1); avirt = _j - bvirt; bround = _i - bvirt; around = adxbdy1 - avirt; _0 = around + bround; _i = (double)(_0 - bdxady1); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - bdxady1; around = _0 - avirt; ab[1] = around + bround; ab3 = (double)(_j + _i); bvirt = (double)(ab3 - _j); avirt = ab3 - bvirt; bround = _i - bvirt; around = _j - avirt; ab[2] = around + bround;
+            adxbdy1 = adx * bdy; c = splitter * adx; abig = c - adx; ahi = c - abig; alo = adx - ahi; c = splitter * bdy; abig = c - bdy; bhi = c - abig; blo = bdy - bhi; err1 = adxbdy1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); adxbdy0 = (alo * blo) - err3;
+            bdxady1 = bdx * ady; c = splitter * bdx; abig = c - bdx; ahi = c - abig; alo = bdx - ahi; c = splitter * ady; abig = c - ady; bhi = c - abig; blo = ady - bhi; err1 = bdxady1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); bdxady0 = (alo * blo) - err3;
+            _i = adxbdy0 - bdxady0; bvirt = adxbdy0 - _i; avirt = _i + bvirt; bround = bvirt - bdxady0; around = adxbdy0 - avirt; ab[0] = around + bround; _j = adxbdy1 + _i; bvirt = _j - adxbdy1; avirt = _j - bvirt; bround = _i - bvirt; around = adxbdy1 - avirt; _0 = around + bround; _i = _0 - bdxady1; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - bdxady1; around = _0 - avirt; ab[1] = around + bround; ab3 = _j + _i; bvirt = ab3 - _j; avirt = ab3 - bvirt; bround = _i - bvirt; around = _j - avirt; ab[2] = around + bround;
             ab[3] = ab3;
             cxablen = ScaleExpansionZeroElim(4, ab, cdx, cxab);
             cxxablen = ScaleExpansionZeroElim(cxablen, cxab, cdx, cxxab);
@@ -890,12 +863,12 @@ namespace TriangleNet
                 return det;
             }
 
-            bvirt = (double)(pa.x - adx); avirt = adx + bvirt; bround = bvirt - pd.x; around = pa.x - avirt; adxtail = around + bround;
-            bvirt = (double)(pa.y - ady); avirt = ady + bvirt; bround = bvirt - pd.y; around = pa.y - avirt; adytail = around + bround;
-            bvirt = (double)(pb.x - bdx); avirt = bdx + bvirt; bround = bvirt - pd.x; around = pb.x - avirt; bdxtail = around + bround;
-            bvirt = (double)(pb.y - bdy); avirt = bdy + bvirt; bround = bvirt - pd.y; around = pb.y - avirt; bdytail = around + bround;
-            bvirt = (double)(pc.x - cdx); avirt = cdx + bvirt; bround = bvirt - pd.x; around = pc.x - avirt; cdxtail = around + bround;
-            bvirt = (double)(pc.y - cdy); avirt = cdy + bvirt; bround = bvirt - pd.y; around = pc.y - avirt; cdytail = around + bround;
+            bvirt = pa.x - adx; avirt = adx + bvirt; bround = bvirt - pd.x; around = pa.x - avirt; adxtail = around + bround;
+            bvirt = pa.y - ady; avirt = ady + bvirt; bround = bvirt - pd.y; around = pa.y - avirt; adytail = around + bround;
+            bvirt = pb.x - bdx; avirt = bdx + bvirt; bround = bvirt - pd.x; around = pb.x - avirt; bdxtail = around + bround;
+            bvirt = pb.y - bdy; avirt = bdy + bvirt; bround = bvirt - pd.y; around = pb.y - avirt; bdytail = around + bround;
+            bvirt = pc.x - cdx; avirt = cdx + bvirt; bround = bvirt - pd.x; around = pc.x - avirt; cdxtail = around + bround;
+            bvirt = pc.y - cdy; avirt = cdy + bvirt; bround = bvirt - pd.y; around = pc.y - avirt; cdytail = around + bround;
             if ((adxtail == 0.0) && (bdxtail == 0.0) && (cdxtail == 0.0)
                 && (adytail == 0.0) && (bdytail == 0.0) && (cdytail == 0.0))
             {
@@ -919,23 +892,23 @@ namespace TriangleNet
 
             if ((bdxtail != 0.0) || (bdytail != 0.0) || (cdxtail != 0.0) || (cdytail != 0.0))
             {
-                adxadx1 = (double)(adx * adx); c = (double)(splitter * adx); abig = (double)(c - adx); ahi = c - abig; alo = adx - ahi; err1 = adxadx1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); adxadx0 = (alo * alo) - err3;
-                adyady1 = (double)(ady * ady); c = (double)(splitter * ady); abig = (double)(c - ady); ahi = c - abig; alo = ady - ahi; err1 = adyady1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); adyady0 = (alo * alo) - err3;
-                _i = (double)(adxadx0 + adyady0); bvirt = (double)(_i - adxadx0); avirt = _i - bvirt; bround = adyady0 - bvirt; around = adxadx0 - avirt; aa[0] = around + bround; _j = (double)(adxadx1 + _i); bvirt = (double)(_j - adxadx1); avirt = _j - bvirt; bround = _i - bvirt; around = adxadx1 - avirt; _0 = around + bround; _i = (double)(_0 + adyady1); bvirt = (double)(_i - _0); avirt = _i - bvirt; bround = adyady1 - bvirt; around = _0 - avirt; aa[1] = around + bround; aa3 = (double)(_j + _i); bvirt = (double)(aa3 - _j); avirt = aa3 - bvirt; bround = _i - bvirt; around = _j - avirt; aa[2] = around + bround;
+                adxadx1 = adx * adx; c = splitter * adx; abig = c - adx; ahi = c - abig; alo = adx - ahi; err1 = adxadx1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); adxadx0 = (alo * alo) - err3;
+                adyady1 = ady * ady; c = splitter * ady; abig = c - ady; ahi = c - abig; alo = ady - ahi; err1 = adyady1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); adyady0 = (alo * alo) - err3;
+                _i = adxadx0 + adyady0; bvirt = _i - adxadx0; avirt = _i - bvirt; bround = adyady0 - bvirt; around = adxadx0 - avirt; aa[0] = around + bround; _j = adxadx1 + _i; bvirt = _j - adxadx1; avirt = _j - bvirt; bround = _i - bvirt; around = adxadx1 - avirt; _0 = around + bround; _i = _0 + adyady1; bvirt = _i - _0; avirt = _i - bvirt; bround = adyady1 - bvirt; around = _0 - avirt; aa[1] = around + bround; aa3 = _j + _i; bvirt = aa3 - _j; avirt = aa3 - bvirt; bround = _i - bvirt; around = _j - avirt; aa[2] = around + bround;
                 aa[3] = aa3;
             }
             if ((cdxtail != 0.0) || (cdytail != 0.0) || (adxtail != 0.0) || (adytail != 0.0))
             {
-                bdxbdx1 = (double)(bdx * bdx); c = (double)(splitter * bdx); abig = (double)(c - bdx); ahi = c - abig; alo = bdx - ahi; err1 = bdxbdx1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); bdxbdx0 = (alo * alo) - err3;
-                bdybdy1 = (double)(bdy * bdy); c = (double)(splitter * bdy); abig = (double)(c - bdy); ahi = c - abig; alo = bdy - ahi; err1 = bdybdy1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); bdybdy0 = (alo * alo) - err3;
-                _i = (double)(bdxbdx0 + bdybdy0); bvirt = (double)(_i - bdxbdx0); avirt = _i - bvirt; bround = bdybdy0 - bvirt; around = bdxbdx0 - avirt; bb[0] = around + bround; _j = (double)(bdxbdx1 + _i); bvirt = (double)(_j - bdxbdx1); avirt = _j - bvirt; bround = _i - bvirt; around = bdxbdx1 - avirt; _0 = around + bround; _i = (double)(_0 + bdybdy1); bvirt = (double)(_i - _0); avirt = _i - bvirt; bround = bdybdy1 - bvirt; around = _0 - avirt; bb[1] = around + bround; bb3 = (double)(_j + _i); bvirt = (double)(bb3 - _j); avirt = bb3 - bvirt; bround = _i - bvirt; around = _j - avirt; bb[2] = around + bround;
+                bdxbdx1 = bdx * bdx; c = splitter * bdx; abig = c - bdx; ahi = c - abig; alo = bdx - ahi; err1 = bdxbdx1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); bdxbdx0 = (alo * alo) - err3;
+                bdybdy1 = bdy * bdy; c = splitter * bdy; abig = c - bdy; ahi = c - abig; alo = bdy - ahi; err1 = bdybdy1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); bdybdy0 = (alo * alo) - err3;
+                _i = bdxbdx0 + bdybdy0; bvirt = _i - bdxbdx0; avirt = _i - bvirt; bround = bdybdy0 - bvirt; around = bdxbdx0 - avirt; bb[0] = around + bround; _j = bdxbdx1 + _i; bvirt = _j - bdxbdx1; avirt = _j - bvirt; bround = _i - bvirt; around = bdxbdx1 - avirt; _0 = around + bround; _i = _0 + bdybdy1; bvirt = _i - _0; avirt = _i - bvirt; bround = bdybdy1 - bvirt; around = _0 - avirt; bb[1] = around + bround; bb3 = _j + _i; bvirt = bb3 - _j; avirt = bb3 - bvirt; bround = _i - bvirt; around = _j - avirt; bb[2] = around + bround;
                 bb[3] = bb3;
             }
             if ((adxtail != 0.0) || (adytail != 0.0) || (bdxtail != 0.0) || (bdytail != 0.0))
             {
-                cdxcdx1 = (double)(cdx * cdx); c = (double)(splitter * cdx); abig = (double)(c - cdx); ahi = c - abig; alo = cdx - ahi; err1 = cdxcdx1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); cdxcdx0 = (alo * alo) - err3;
-                cdycdy1 = (double)(cdy * cdy); c = (double)(splitter * cdy); abig = (double)(c - cdy); ahi = c - abig; alo = cdy - ahi; err1 = cdycdy1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); cdycdy0 = (alo * alo) - err3;
-                _i = (double)(cdxcdx0 + cdycdy0); bvirt = (double)(_i - cdxcdx0); avirt = _i - bvirt; bround = cdycdy0 - bvirt; around = cdxcdx0 - avirt; cc[0] = around + bround; _j = (double)(cdxcdx1 + _i); bvirt = (double)(_j - cdxcdx1); avirt = _j - bvirt; bround = _i - bvirt; around = cdxcdx1 - avirt; _0 = around + bround; _i = (double)(_0 + cdycdy1); bvirt = (double)(_i - _0); avirt = _i - bvirt; bround = cdycdy1 - bvirt; around = _0 - avirt; cc[1] = around + bround; cc3 = (double)(_j + _i); bvirt = (double)(cc3 - _j); avirt = cc3 - bvirt; bround = _i - bvirt; around = _j - avirt; cc[2] = around + bround;
+                cdxcdx1 = cdx * cdx; c = splitter * cdx; abig = c - cdx; ahi = c - abig; alo = cdx - ahi; err1 = cdxcdx1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); cdxcdx0 = (alo * alo) - err3;
+                cdycdy1 = cdy * cdy; c = splitter * cdy; abig = c - cdy; ahi = c - abig; alo = cdy - ahi; err1 = cdycdy1 - (ahi * ahi); err3 = err1 - ((ahi + ahi) * alo); cdycdy0 = (alo * alo) - err3;
+                _i = cdxcdx0 + cdycdy0; bvirt = _i - cdxcdx0; avirt = _i - bvirt; bround = cdycdy0 - bvirt; around = cdxcdx0 - avirt; cc[0] = around + bround; _j = cdxcdx1 + _i; bvirt = _j - cdxcdx1; avirt = _j - bvirt; bround = _i - bvirt; around = cdxcdx1 - avirt; _0 = around + bround; _i = _0 + cdycdy1; bvirt = _i - _0; avirt = _i - bvirt; bround = cdycdy1 - bvirt; around = _0 - avirt; cc[1] = around + bround; cc3 = _j + _i; bvirt = cc3 - _j; avirt = cc3 - bvirt; bround = _i - bvirt; around = _j - avirt; cc[2] = around + bround;
                 cc[3] = cc3;
             }
 
@@ -1041,21 +1014,21 @@ namespace TriangleNet
                 if ((bdxtail != 0.0) || (bdytail != 0.0)
                     || (cdxtail != 0.0) || (cdytail != 0.0))
                 {
-                    ti1 = (double)(bdxtail * cdy); c = (double)(splitter * bdxtail); abig = (double)(c - bdxtail); ahi = c - abig; alo = bdxtail - ahi; c = (double)(splitter * cdy); abig = (double)(c - cdy); bhi = c - abig; blo = cdy - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
-                    tj1 = (double)(bdx * cdytail); c = (double)(splitter * bdx); abig = (double)(c - bdx); ahi = c - abig; alo = bdx - ahi; c = (double)(splitter * cdytail); abig = (double)(c - cdytail); bhi = c - abig; blo = cdytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
-                    _i = (double)(ti0 + tj0); bvirt = (double)(_i - ti0); avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; u[0] = around + bround; _j = (double)(ti1 + _i); bvirt = (double)(_j - ti1); avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = (double)(_0 + tj1); bvirt = (double)(_i - _0); avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; u[1] = around + bround; u3 = (double)(_j + _i); bvirt = (double)(u3 - _j); avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
+                    ti1 = bdxtail * cdy; c = splitter * bdxtail; abig = c - bdxtail; ahi = c - abig; alo = bdxtail - ahi; c = splitter * cdy; abig = c - cdy; bhi = c - abig; blo = cdy - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
+                    tj1 = bdx * cdytail; c = splitter * bdx; abig = c - bdx; ahi = c - abig; alo = bdx - ahi; c = splitter * cdytail; abig = c - cdytail; bhi = c - abig; blo = cdytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
+                    _i = ti0 + tj0; bvirt = _i - ti0; avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; u[0] = around + bround; _j = ti1 + _i; bvirt = _j - ti1; avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = _0 + tj1; bvirt = _i - _0; avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; u[1] = around + bround; u3 = _j + _i; bvirt = u3 - _j; avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
                     u[3] = u3;
                     negate = -bdy;
-                    ti1 = (double)(cdxtail * negate); c = (double)(splitter * cdxtail); abig = (double)(c - cdxtail); ahi = c - abig; alo = cdxtail - ahi; c = (double)(splitter * negate); abig = (double)(c - negate); bhi = c - abig; blo = negate - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
+                    ti1 = cdxtail * negate; c = splitter * cdxtail; abig = c - cdxtail; ahi = c - abig; alo = cdxtail - ahi; c = splitter * negate; abig = c - negate; bhi = c - abig; blo = negate - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
                     negate = -bdytail;
-                    tj1 = (double)(cdx * negate); c = (double)(splitter * cdx); abig = (double)(c - cdx); ahi = c - abig; alo = cdx - ahi; c = (double)(splitter * negate); abig = (double)(c - negate); bhi = c - abig; blo = negate - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
-                    _i = (double)(ti0 + tj0); bvirt = (double)(_i - ti0); avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; v[0] = around + bround; _j = (double)(ti1 + _i); bvirt = (double)(_j - ti1); avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = (double)(_0 + tj1); bvirt = (double)(_i - _0); avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; v[1] = around + bround; v3 = (double)(_j + _i); bvirt = (double)(v3 - _j); avirt = v3 - bvirt; bround = _i - bvirt; around = _j - avirt; v[2] = around + bround;
+                    tj1 = cdx * negate; c = splitter * cdx; abig = c - cdx; ahi = c - abig; alo = cdx - ahi; c = splitter * negate; abig = c - negate; bhi = c - abig; blo = negate - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
+                    _i = ti0 + tj0; bvirt = _i - ti0; avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; v[0] = around + bround; _j = ti1 + _i; bvirt = _j - ti1; avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = _0 + tj1; bvirt = _i - _0; avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; v[1] = around + bround; v3 = _j + _i; bvirt = v3 - _j; avirt = v3 - bvirt; bround = _i - bvirt; around = _j - avirt; v[2] = around + bround;
                     v[3] = v3;
                     bctlen = FastExpansionSumZeroElim(4, u, 4, v, bct);
 
-                    ti1 = (double)(bdxtail * cdytail); c = (double)(splitter * bdxtail); abig = (double)(c - bdxtail); ahi = c - abig; alo = bdxtail - ahi; c = (double)(splitter * cdytail); abig = (double)(c - cdytail); bhi = c - abig; blo = cdytail - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
-                    tj1 = (double)(cdxtail * bdytail); c = (double)(splitter * cdxtail); abig = (double)(c - cdxtail); ahi = c - abig; alo = cdxtail - ahi; c = (double)(splitter * bdytail); abig = (double)(c - bdytail); bhi = c - abig; blo = bdytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
-                    _i = (double)(ti0 - tj0); bvirt = (double)(ti0 - _i); avirt = _i + bvirt; bround = bvirt - tj0; around = ti0 - avirt; bctt[0] = around + bround; _j = (double)(ti1 + _i); bvirt = (double)(_j - ti1); avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = (double)(_0 - tj1); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - tj1; around = _0 - avirt; bctt[1] = around + bround; bctt3 = (double)(_j + _i); bvirt = (double)(bctt3 - _j); avirt = bctt3 - bvirt; bround = _i - bvirt; around = _j - avirt; bctt[2] = around + bround;
+                    ti1 = bdxtail * cdytail; c = splitter * bdxtail; abig = c - bdxtail; ahi = c - abig; alo = bdxtail - ahi; c = splitter * cdytail; abig = c - cdytail; bhi = c - abig; blo = cdytail - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
+                    tj1 = cdxtail * bdytail; c = splitter * cdxtail; abig = c - cdxtail; ahi = c - abig; alo = cdxtail - ahi; c = splitter * bdytail; abig = c - bdytail; bhi = c - abig; blo = bdytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
+                    _i = ti0 - tj0; bvirt = ti0 - _i; avirt = _i + bvirt; bround = bvirt - tj0; around = ti0 - avirt; bctt[0] = around + bround; _j = ti1 + _i; bvirt = _j - ti1; avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = _0 - tj1; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - tj1; around = _0 - avirt; bctt[1] = around + bround; bctt3 = _j + _i; bvirt = bctt3 - _j; avirt = bctt3 - bvirt; bround = _i - bvirt; around = _j - avirt; bctt[2] = around + bround;
                     bctt[3] = bctt3;
                     bcttlen = 4;
                 }
@@ -1124,21 +1097,21 @@ namespace TriangleNet
                 if ((cdxtail != 0.0) || (cdytail != 0.0)
                     || (adxtail != 0.0) || (adytail != 0.0))
                 {
-                    ti1 = (double)(cdxtail * ady); c = (double)(splitter * cdxtail); abig = (double)(c - cdxtail); ahi = c - abig; alo = cdxtail - ahi; c = (double)(splitter * ady); abig = (double)(c - ady); bhi = c - abig; blo = ady - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
-                    tj1 = (double)(cdx * adytail); c = (double)(splitter * cdx); abig = (double)(c - cdx); ahi = c - abig; alo = cdx - ahi; c = (double)(splitter * adytail); abig = (double)(c - adytail); bhi = c - abig; blo = adytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
-                    _i = (double)(ti0 + tj0); bvirt = (double)(_i - ti0); avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; u[0] = around + bround; _j = (double)(ti1 + _i); bvirt = (double)(_j - ti1); avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = (double)(_0 + tj1); bvirt = (double)(_i - _0); avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; u[1] = around + bround; u3 = (double)(_j + _i); bvirt = (double)(u3 - _j); avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
+                    ti1 = cdxtail * ady; c = splitter * cdxtail; abig = c - cdxtail; ahi = c - abig; alo = cdxtail - ahi; c = splitter * ady; abig = c - ady; bhi = c - abig; blo = ady - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
+                    tj1 = cdx * adytail; c = splitter * cdx; abig = c - cdx; ahi = c - abig; alo = cdx - ahi; c = splitter * adytail; abig = c - adytail; bhi = c - abig; blo = adytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
+                    _i = ti0 + tj0; bvirt = _i - ti0; avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; u[0] = around + bround; _j = ti1 + _i; bvirt = _j - ti1; avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = _0 + tj1; bvirt = _i - _0; avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; u[1] = around + bround; u3 = _j + _i; bvirt = u3 - _j; avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
                     u[3] = u3;
                     negate = -cdy;
-                    ti1 = (double)(adxtail * negate); c = (double)(splitter * adxtail); abig = (double)(c - adxtail); ahi = c - abig; alo = adxtail - ahi; c = (double)(splitter * negate); abig = (double)(c - negate); bhi = c - abig; blo = negate - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
+                    ti1 = adxtail * negate; c = splitter * adxtail; abig = c - adxtail; ahi = c - abig; alo = adxtail - ahi; c = splitter * negate; abig = c - negate; bhi = c - abig; blo = negate - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
                     negate = -cdytail;
-                    tj1 = (double)(adx * negate); c = (double)(splitter * adx); abig = (double)(c - adx); ahi = c - abig; alo = adx - ahi; c = (double)(splitter * negate); abig = (double)(c - negate); bhi = c - abig; blo = negate - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
-                    _i = (double)(ti0 + tj0); bvirt = (double)(_i - ti0); avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; v[0] = around + bround; _j = (double)(ti1 + _i); bvirt = (double)(_j - ti1); avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = (double)(_0 + tj1); bvirt = (double)(_i - _0); avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; v[1] = around + bround; v3 = (double)(_j + _i); bvirt = (double)(v3 - _j); avirt = v3 - bvirt; bround = _i - bvirt; around = _j - avirt; v[2] = around + bround;
+                    tj1 = adx * negate; c = splitter * adx; abig = c - adx; ahi = c - abig; alo = adx - ahi; c = splitter * negate; abig = c - negate; bhi = c - abig; blo = negate - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
+                    _i = ti0 + tj0; bvirt = _i - ti0; avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; v[0] = around + bround; _j = ti1 + _i; bvirt = _j - ti1; avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = _0 + tj1; bvirt = _i - _0; avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; v[1] = around + bround; v3 = _j + _i; bvirt = v3 - _j; avirt = v3 - bvirt; bround = _i - bvirt; around = _j - avirt; v[2] = around + bround;
                     v[3] = v3;
                     catlen = FastExpansionSumZeroElim(4, u, 4, v, cat);
 
-                    ti1 = (double)(cdxtail * adytail); c = (double)(splitter * cdxtail); abig = (double)(c - cdxtail); ahi = c - abig; alo = cdxtail - ahi; c = (double)(splitter * adytail); abig = (double)(c - adytail); bhi = c - abig; blo = adytail - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
-                    tj1 = (double)(adxtail * cdytail); c = (double)(splitter * adxtail); abig = (double)(c - adxtail); ahi = c - abig; alo = adxtail - ahi; c = (double)(splitter * cdytail); abig = (double)(c - cdytail); bhi = c - abig; blo = cdytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
-                    _i = (double)(ti0 - tj0); bvirt = (double)(ti0 - _i); avirt = _i + bvirt; bround = bvirt - tj0; around = ti0 - avirt; catt[0] = around + bround; _j = (double)(ti1 + _i); bvirt = (double)(_j - ti1); avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = (double)(_0 - tj1); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - tj1; around = _0 - avirt; catt[1] = around + bround; catt3 = (double)(_j + _i); bvirt = (double)(catt3 - _j); avirt = catt3 - bvirt; bround = _i - bvirt; around = _j - avirt; catt[2] = around + bround;
+                    ti1 = cdxtail * adytail; c = splitter * cdxtail; abig = c - cdxtail; ahi = c - abig; alo = cdxtail - ahi; c = splitter * adytail; abig = c - adytail; bhi = c - abig; blo = adytail - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
+                    tj1 = adxtail * cdytail; c = splitter * adxtail; abig = c - adxtail; ahi = c - abig; alo = adxtail - ahi; c = splitter * cdytail; abig = c - cdytail; bhi = c - abig; blo = cdytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
+                    _i = ti0 - tj0; bvirt = ti0 - _i; avirt = _i + bvirt; bround = bvirt - tj0; around = ti0 - avirt; catt[0] = around + bround; _j = ti1 + _i; bvirt = _j - ti1; avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = _0 - tj1; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - tj1; around = _0 - avirt; catt[1] = around + bround; catt3 = _j + _i; bvirt = catt3 - _j; avirt = catt3 - bvirt; bround = _i - bvirt; around = _j - avirt; catt[2] = around + bround;
                     catt[3] = catt3;
                     cattlen = 4;
                 }
@@ -1206,21 +1179,21 @@ namespace TriangleNet
                 if ((adxtail != 0.0) || (adytail != 0.0)
                     || (bdxtail != 0.0) || (bdytail != 0.0))
                 {
-                    ti1 = (double)(adxtail * bdy); c = (double)(splitter * adxtail); abig = (double)(c - adxtail); ahi = c - abig; alo = adxtail - ahi; c = (double)(splitter * bdy); abig = (double)(c - bdy); bhi = c - abig; blo = bdy - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
-                    tj1 = (double)(adx * bdytail); c = (double)(splitter * adx); abig = (double)(c - adx); ahi = c - abig; alo = adx - ahi; c = (double)(splitter * bdytail); abig = (double)(c - bdytail); bhi = c - abig; blo = bdytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
-                    _i = (double)(ti0 + tj0); bvirt = (double)(_i - ti0); avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; u[0] = around + bround; _j = (double)(ti1 + _i); bvirt = (double)(_j - ti1); avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = (double)(_0 + tj1); bvirt = (double)(_i - _0); avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; u[1] = around + bround; u3 = (double)(_j + _i); bvirt = (double)(u3 - _j); avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
+                    ti1 = adxtail * bdy; c = splitter * adxtail; abig = c - adxtail; ahi = c - abig; alo = adxtail - ahi; c = splitter * bdy; abig = c - bdy; bhi = c - abig; blo = bdy - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
+                    tj1 = adx * bdytail; c = splitter * adx; abig = c - adx; ahi = c - abig; alo = adx - ahi; c = splitter * bdytail; abig = c - bdytail; bhi = c - abig; blo = bdytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
+                    _i = ti0 + tj0; bvirt = _i - ti0; avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; u[0] = around + bround; _j = ti1 + _i; bvirt = _j - ti1; avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = _0 + tj1; bvirt = _i - _0; avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; u[1] = around + bround; u3 = _j + _i; bvirt = u3 - _j; avirt = u3 - bvirt; bround = _i - bvirt; around = _j - avirt; u[2] = around + bround;
                     u[3] = u3;
                     negate = -ady;
-                    ti1 = (double)(bdxtail * negate); c = (double)(splitter * bdxtail); abig = (double)(c - bdxtail); ahi = c - abig; alo = bdxtail - ahi; c = (double)(splitter * negate); abig = (double)(c - negate); bhi = c - abig; blo = negate - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
+                    ti1 = bdxtail * negate; c = splitter * bdxtail; abig = c - bdxtail; ahi = c - abig; alo = bdxtail - ahi; c = splitter * negate; abig = c - negate; bhi = c - abig; blo = negate - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
                     negate = -adytail;
-                    tj1 = (double)(bdx * negate); c = (double)(splitter * bdx); abig = (double)(c - bdx); ahi = c - abig; alo = bdx - ahi; c = (double)(splitter * negate); abig = (double)(c - negate); bhi = c - abig; blo = negate - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
-                    _i = (double)(ti0 + tj0); bvirt = (double)(_i - ti0); avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; v[0] = around + bround; _j = (double)(ti1 + _i); bvirt = (double)(_j - ti1); avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = (double)(_0 + tj1); bvirt = (double)(_i - _0); avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; v[1] = around + bround; v3 = (double)(_j + _i); bvirt = (double)(v3 - _j); avirt = v3 - bvirt; bround = _i - bvirt; around = _j - avirt; v[2] = around + bround;
+                    tj1 = bdx * negate; c = splitter * bdx; abig = c - bdx; ahi = c - abig; alo = bdx - ahi; c = splitter * negate; abig = c - negate; bhi = c - abig; blo = negate - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
+                    _i = ti0 + tj0; bvirt = _i - ti0; avirt = _i - bvirt; bround = tj0 - bvirt; around = ti0 - avirt; v[0] = around + bround; _j = ti1 + _i; bvirt = _j - ti1; avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = _0 + tj1; bvirt = _i - _0; avirt = _i - bvirt; bround = tj1 - bvirt; around = _0 - avirt; v[1] = around + bround; v3 = _j + _i; bvirt = v3 - _j; avirt = v3 - bvirt; bround = _i - bvirt; around = _j - avirt; v[2] = around + bround;
                     v[3] = v3;
                     abtlen = FastExpansionSumZeroElim(4, u, 4, v, abt);
 
-                    ti1 = (double)(adxtail * bdytail); c = (double)(splitter * adxtail); abig = (double)(c - adxtail); ahi = c - abig; alo = adxtail - ahi; c = (double)(splitter * bdytail); abig = (double)(c - bdytail); bhi = c - abig; blo = bdytail - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
-                    tj1 = (double)(bdxtail * adytail); c = (double)(splitter * bdxtail); abig = (double)(c - bdxtail); ahi = c - abig; alo = bdxtail - ahi; c = (double)(splitter * adytail); abig = (double)(c - adytail); bhi = c - abig; blo = adytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
-                    _i = (double)(ti0 - tj0); bvirt = (double)(ti0 - _i); avirt = _i + bvirt; bround = bvirt - tj0; around = ti0 - avirt; abtt[0] = around + bround; _j = (double)(ti1 + _i); bvirt = (double)(_j - ti1); avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = (double)(_0 - tj1); bvirt = (double)(_0 - _i); avirt = _i + bvirt; bround = bvirt - tj1; around = _0 - avirt; abtt[1] = around + bround; abtt3 = (double)(_j + _i); bvirt = (double)(abtt3 - _j); avirt = abtt3 - bvirt; bround = _i - bvirt; around = _j - avirt; abtt[2] = around + bround;
+                    ti1 = adxtail * bdytail; c = splitter * adxtail; abig = c - adxtail; ahi = c - abig; alo = adxtail - ahi; c = splitter * bdytail; abig = c - bdytail; bhi = c - abig; blo = bdytail - bhi; err1 = ti1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); ti0 = (alo * blo) - err3;
+                    tj1 = bdxtail * adytail; c = splitter * bdxtail; abig = c - bdxtail; ahi = c - abig; alo = bdxtail - ahi; c = splitter * adytail; abig = c - adytail; bhi = c - abig; blo = adytail - bhi; err1 = tj1 - (ahi * bhi); err2 = err1 - (alo * bhi); err3 = err2 - (ahi * blo); tj0 = (alo * blo) - err3;
+                    _i = ti0 - tj0; bvirt = ti0 - _i; avirt = _i + bvirt; bround = bvirt - tj0; around = ti0 - avirt; abtt[0] = around + bround; _j = ti1 + _i; bvirt = _j - ti1; avirt = _j - bvirt; bround = _i - bvirt; around = ti1 - avirt; _0 = around + bround; _i = _0 - tj1; bvirt = _0 - _i; avirt = _i + bvirt; bround = bvirt - tj1; around = _0 - avirt; abtt[1] = around + bround; abtt3 = _j + _i; bvirt = abtt3 - _j; avirt = abtt3 - bvirt; bround = _i - bvirt; around = _j - avirt; abtt[2] = around + bround;
                     abtt[3] = abtt3;
                     abttlen = 4;
                 }
@@ -1300,6 +1273,21 @@ namespace TriangleNet
         double[] temp8, temp16a, temp16b, temp16c;
         double[] temp32a, temp32b, temp48, temp64;
 
+        double[] axtbb = new double[8], axtcc = new double[8], aytbb = new double[8], aytcc = new double[8];
+        double[] bxtaa = new double[8], bxtcc = new double[8], bytaa = new double[8], bytcc = new double[8];
+        double[] cxtaa = new double[8], cxtbb = new double[8], cytaa = new double[8], cytbb = new double[8];
+        double[] axtbc = new double[8], aytbc = new double[8], bxtca = new double[8], bytca = new double[8], cxtab = new double[8], cytab = new double[8];
+        double[] aa = new double[4], bb = new double[4], cc = new double[4];
+        double[] axtbct = new double[16], aytbct = new double[16], bxtcat = new double[16], bytcat = new double[16], cxtabt = new double[16], cytabt = new double[16];
+        double[] axtbctt = new double[8], aytbctt = new double[8], bxtcatt = new double[8];
+        double[] bytcatt = new double[8], cxtabtt = new double[8], cytabtt = new double[8];
+        double[] abt = new double[8], bct = new double[8], cat = new double[8];
+        double[] abtt = new double[4], bctt = new double[4], catt = new double[4];
+        double[] bc = new double[4], ca = new double[4], ab = new double[4];
+        double[] u = new double[5], v = new double[5];
+        double[] B = new double[5];
+        double[] C1 = new double[8], C2 = new double[12], D = new double[16];
+        
         private void AllocateWorkspace()
         {
             fin1 = new double[1152];

@@ -43,13 +43,13 @@ namespace MeshExplorer.Examples
             string parallel = $"Parallel: {Util.Toc()}ms";
             //var dummymesh = new Mesh(new Configuration());
             var mesher = new GenericMesher(new Configuration());
+            DarkMessageBox.Show($"{Name} - {Description}", $"{loadingPolygons}\n{sequential} {sequentialInfo} \n{parallel} {parallelInfo}");
 
             foreach (var poly in polygons)
             {
                 InputGenerated(mesher.Triangulate(poly), EventArgs.Empty);
-                DarkMessageBox.Show("", "");
+                DarkMessageBox.Show("Just showing all the read poly files", "Show next");
             }
-            DarkMessageBox.Show($"{Name} - {Description}", $"{loadingPolygons}\n{sequential} {sequentialInfo} \n{parallel} {parallelInfo}");
 
         }
 

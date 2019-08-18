@@ -28,8 +28,10 @@ namespace MeshExplorer.Examples
             var mesh = CreateMesh();
 
             FindBoundary1(mesh);
-            //ImageRenderer.Save(mesh, "boundary-1.png", 250, true, false);
+            InputGenerated(mesh, EventArgs.Empty);
 
+            //ImageRenderer.Save(mesh, "boundary-1.png", 250, true, false);
+            DarkMessageBox.Show($"{Name}", $"Method: FindBoundary1");
             foreach (var triangle in mesh.Triangles)
             {
                 triangle.Label = 0;
@@ -37,6 +39,8 @@ namespace MeshExplorer.Examples
 
             FindBoundary2(mesh);
             InputGenerated(mesh, EventArgs.Empty);
+            DarkMessageBox.Show($"{Name}", $"Method: FindBoundary2");
+
             //ImageRenderer.Save(mesh, "boundary-2.png", 250, true, false);
 
         }

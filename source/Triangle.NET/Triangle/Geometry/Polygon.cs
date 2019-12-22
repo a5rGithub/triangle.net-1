@@ -154,7 +154,7 @@ namespace TriangleNet.Geometry
         /// </summary>
         /// <param name="contour">The contour to insert.</param>
         /// <param name="hole">Treat contour as a hole.</param>
-        public void Add(Contour contour, bool hole = false)
+        public void Add(Contour contour, bool hole = false, int regionlabel = 0)
         {
             if (hole)
             {
@@ -164,6 +164,11 @@ namespace TriangleNet.Geometry
             {
                 this.points.AddRange(contour.Points);
                 this.segments.AddRange(contour.GetSegments());
+                if (regionlabel != 0)
+                {
+                    var interiorPoint = contour.FindInteriorPoint();
+                    this.Regions.Add(new RegionPointer(interiorPoint.X, interiorPoint.Y, regionlabel));
+                }
             }
         }
 

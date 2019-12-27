@@ -94,13 +94,13 @@ namespace TriangleNet.Geometry
         public void AddContour(IEnumerable<Vertex> points, int marker = 0,
             bool hole = false, bool convex = false)
         {
-            this.Add(new Contour(points, marker, convex), hole);
+            this.Add(new Contour(points, marker, convex, SegmentMarkingType.Homogeneous), hole);
         }
 
         [Obsolete("Use polygon.Add(contour) method instead.")]
         public void AddContour(IEnumerable<Vertex> points, int marker, Point hole)
         {
-            this.Add(new Contour(points, marker), hole);
+            this.Add(new Contour(points, marker, SegmentMarkingType.Homogeneous), hole);
         }
 
         /// <inheritdoc />

@@ -8,11 +8,16 @@ namespace TriangleNet.Geometry
 {
     using System;
     using System.Collections.Generic;
+    public enum SegmentMarkingType
+    { 
+        Consecutively,
+        Homogeneous
+    }
 
     public class Contour
     {
-        int marker;
-
+        int segmentMarker;
+        SegmentMarkingType segmentMarkingType;
         bool convex;
 
         /// <summary>
@@ -25,7 +30,7 @@ namespace TriangleNet.Geometry
         /// </summary>
         /// <param name="points">The points that make up the contour.</param>
         public Contour(IEnumerable<Vertex> points)
-            : this(points, 0, false)
+            : this(points, 0, false, SegmentMarkingType.Homogeneous)
         {
         }
 
@@ -33,9 +38,9 @@ namespace TriangleNet.Geometry
         /// Initializes a new instance of the <see cref="Contour" /> class.
         /// </summary>
         /// <param name="points">The points that make up the contour.</param>
-        /// <param name="marker">Contour marker.</param>
-        public Contour(IEnumerable<Vertex> points, int marker)
-            : this(points, marker, false)
+        /// <param name="segmentmarker">Contour marker.</param>
+        public Contour(IEnumerable<Vertex> points, int segmentmarker, SegmentMarkingType segmentmarkingtype = SegmentMarkingType.Homogeneous)
+            : this(points, segmentmarker, false, segmentmarkingtype)
         {
         }
 
@@ -43,33 +48,31 @@ namespace TriangleNet.Geometry
         /// Initializes a new instance of the <see cref="Contour" /> class.
         /// </summary>
         /// <param name="points">The points that make up the contour.</param>
-        /// <param name="marker">Contour marker.</param>
+        /// <param name="segmentmarker">Contour marker.</param>
         /// <param name="convex">The hole is convex.</param>
-        public Contour(IEnumerable<Vertex> points, int marker, bool convex)
+        public Contour(IEnumerable<Vertex> points, int segmentmarker, bool convex, SegmentMarkingType segmentmarkingtype = SegmentMarkingType.Homogeneous)
         {
             AddPoints(points);
 
-            this.marker = marker;
+            this.segmentMarker = segmentmarker;
             this.convex = convex;
+            segmentMarkingType = segmentmarkingtype;
         }
 
         public List<ISegment> GetSegments()
         {
             var segments = new List<ISegment>();
-
             var p = this.Points;
-
             int count = p.Count - 1;
-
+            var localSegmentMarker = segmentMarker;
             for (int i = 0; i < count; i++)
             {
-                // Add segments to polygon.
-                segments.Add(new Segment(p[i], p[i + 1], marker));
+                segments.Add(new Segment(p[i], p[i + 1], localSegmentMarker));
+                if (segmentMarkingType == SegmentMarkingType.Consecutively)
+                    localSegmentMarker++;
             }
-
             // Close the contour.
-            segments.Add(new Segment(p[count], p[0], marker));
-
+            segments.Add(new Segment(p[count], p[0], localSegmentMarker));
             return segments;
         }
 

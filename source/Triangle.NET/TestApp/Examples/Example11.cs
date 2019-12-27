@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,7 +28,8 @@ namespace MeshExplorer.Examples
             rectContourVertices.Add(new Vertex(10.0, 0.0, 2));
             rectContourVertices.Add(new Vertex(10.0, 10.0, 3));
             rectContourVertices.Add(new Vertex(0.0, 10.0, 4));
-            var rectangularContour = new Contour(rectContourVertices, true);
+            var segmentMarking = SegmentMarkingType.Consecutively;
+            var rectangularContour = new Contour(rectContourVertices, 18, segmentMarking);
 
             var innerrectContourVertices = new List<Vertex>();
             innerrectContourVertices.Add(new Vertex(2.0, 4.0, 1));
@@ -37,14 +39,23 @@ namespace MeshExplorer.Examples
             innerrectContourVertices.Add(new Vertex(4.8, 1.5, 4));
             innerrectContourVertices.Add(new Vertex(3.5, 2.2, 2));
 
-            var innerContour = new Contour(innerrectContourVertices, true);
+            var innerContour = new Contour(innerrectContourVertices, 37, segmentMarking);
             var polygon = new Polygon(5, true);
-            var face = Example2.Circle(5, new Point(5, 5), 0.5, 1);
+            polygon.Add(new Vertex(0.0, 0.05));
+            var face = Example2.Circle(5, new Point(5, 5), 0.5, 69);
             polygon.Add(face, hole: false, regionlabel: 10);
-
+            var pointLabels = polygon.Points.Select(p => p.Label);
             var segmentLabels = polygon.Segments.Select(s => s.Label);
+
             polygon.Add(rectangularContour, hole: false, regionlabel: 1);
+            pointLabels = polygon.Points.Select(p => p.Label);
+            segmentLabels = polygon.Segments.Select(s => s.Label);
+
             polygon.Add(innerContour, hole: false, regionlabel: 45);
+            pointLabels = polygon.Points.Select(p => p.Label);
+            segmentLabels = polygon.Segments.Select(s => s.Label);
+
+
             var lefteye = Example2.Circle(0.5, new Point(3, 7), 0.5, 100);
             polygon.Add(lefteye, hole: false, regionlabel: 100);
             var righteye = Example2.Circle(0.5, new Point(7, 7), 0.5, 100);
@@ -55,4 +66,5 @@ namespace MeshExplorer.Examples
             InputGenerated(mesh, EventArgs.Empty);
         }
     }
+
 }

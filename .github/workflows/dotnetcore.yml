@@ -13,9 +13,5 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 2.2.108
-    - task: DotNetCoreCLI@2
-      displayName: Build with dotnet
-      inputs:
-        command: build
-        projects: '**/*.csproj'
-        arguments: '--configuration Release' # Update this to match your need
+    - name: Build with dotnet
+      run: dotnet build ..\..\source\Triangle.NET\Triangle\Triangle.csproj --configuration Release
